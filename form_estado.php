@@ -14,7 +14,7 @@
 			
 			$("filtro").click(function(){
 				$.ajax({
-					url:"paginação_cadastro.php",
+					url:"paginação_estado.php",
 					type:"post",
 					data:{
 							nome_filtro: $("input[name='nome_filtro']")
@@ -31,26 +31,14 @@
 				id = $(this).attr("value");
 				
 				$.ajax({
-					url: "carrega_cadastro_alterar.php",
+					url: "carrega_estado_alterar.php",
 					type: "post",
 					data: {id: id},
 					success: function(vetor){
 						$("input[name='nome']").val(vetor.nome);
-						$("input[name='email']").val(vetor.email);
-						if(vetor.sexo=="m"){
-							$("input[name='sexo'][value='f']").attr(
-							"checked",false);
-							$("input[name='sexo'][value='m']").attr(
-							"checked",true);
-						}
-						else{
-							$("input[name='sexo'][value='m']").attr(
-							"checked",false);
-							$("input[name='sexo'][value='f']").attr(
-							"checked",true);
-						}
+						$("input[name='uf']").val(vetor.uf);
 						$(".cadastrar").attr("class","alteracao");
-						$(".alteracao").val("Alterar cadastro");
+						$(".alteracao").val("Alterar estado");
 					}
 				});
 				
@@ -59,7 +47,7 @@
 			function paginacao(p){
 				
 				$.ajax({
-					url: "carrega_cadastro.php",
+					url: "carrega_estado.php",
 					type:"post",
 					data:{pg: p},
 					success: function(matriz){
@@ -68,10 +56,8 @@
 						for(i=0;i<matriz.length;i++){
 							linha = "<tr>";
 							linha += "<td class='nome'>" + matriz[i].nome + "</td>";
-							linha += "<td>" + matriz[i].email + "</td>";
-							linha += "<td>" + matriz[i].sexo + "</td>";
-							linha += "<td>" + matriz[i].salario + "</td>";
-							linha += "<td><button type='button' class='alterar' value='" + matriz[i].id_cadastro + "'>alterar</button> <button type='button' class='remover' value='" + matriz[i].id_cadastro + "'>remover</button> </td>";
+							linha += "<td>" + matriz[i].uf + "</td>";
+							linha += "<td><button type='button' class='alterar' value='" + matriz[i].id_estado + "'>alterar</button> <button type='button' class='remover' value='" + matriz[i].id_estado + "'>remover</button> </td>";
 							linha += "</tr>";
 							$("#tb").append(linha);
 						}
@@ -89,27 +75,24 @@
 			
 			
 			
-			
 			$(document).on("click",".cadastrar",function()
 			{
 					nome = $("input[name='nome']").val();
-					email = $("input[name='email']").val();
-					sexo = $("input[name='sexo']:checked").val();
-					salario = $("input[name='salario']").val();
+					uf = $("input[name='uf']").val(); 
+					
 
 					
 					$.ajax(
 					{
 						url: "insere_cadastro.php",
 						type: "post",
-						data: {nome: nome, email: email, sexo: sexo,salario:salario},
+						data: {nome: nome, uf: uf},
 						success: function(d)
 						{	
 						if(d=='1'){
-							$("#mensagens").html("pessoa cadastrada com sucesso");
+							$("#mensagens").html("estado cadastrado com sucesso");
 							$("input[name='nome']").val("");
-							$("input[name='email']").val("");
-							$("input[name='sexo']").prop("checked",false);
+							$("input[name='uf']").val("");
 							paginacao(0);
 							}else{
 								console.log(d);
@@ -121,26 +104,23 @@
 			$(document).on("click",".alteracao",function(){
 				
 				nome = $("input[name='nome']").val();
-					email = $("input[name='email']").val();
-					sexo = $("input[name='sexo']:checked").val();
-
+					uf = $("input[name='uf']").val();
 					
 					$.ajax(
 					{
-						url: "alteracao_cadastro.php",
+						url: "alteracao_estado.php",
 						type: "post",
 						data: {
-							id: id,nome: nome, email: email, sexo: sexo},
+							id_estado: id_estado ,nome: nome, uf: uf},
 						success: function(d)
 						{	
 							if(d=='1'){
 								$("#mensagens").html("cadastro alterado com sucesso");
 								$("input[name='nome']").val("");
-								$("input[name='email']").val("");
-								$("input[name='sexo']").prop("checked",false);
-								paginacao(0);
+								$("input[name='uf']").val("");
+								
 								$("input[name='nome']").val("");
-								$("input[name='email']").val("");
+								$("select[name='uf']").val("");
 								$(".alteracao").attr("class","cadastrar");
 								$(".cadastrar").val("cadastrar");
 								
@@ -152,21 +132,11 @@
 				
 			});
 			
-			//-$(document).on("click",".nome",function(){
+			$(document).on("click",".nome",function(){
 				td = $(this);
 				nome = td.html();
-				td.html("<input type='text' name='nome' value='" + nome + "' />");
+				td.html("<input type='text' id='nome_alterar' name='nome' value='" + nome + "' />");
 				td.attr("class","nome_alterar");
-			});
-			
-			$(document).on("click",".sexo",function(){
-				td = $(this);
-				sexo = td.html();
-				sexo_input = ("<input type='radio' class='alterar_sexo' name='sexo' value='m' />)M";
-				sexo_input += ("<input type='radio' class='alterar_sexo' name='sexo' value='F' />)F";
-				td.html(sexo_input);
-				if(sexo=="M")
-				td.attr("class","sexo_alterar");
 			});
 			
 			$(document).on("blur",".nome_alterar",function(){
@@ -176,10 +146,11 @@
 					url:"alterar_coluna.php",
 					type:"post",
 					data:{coluna:'nome', valor:$("#nome_alterar").val(),
-					id: id_linha, tabela: "cadastro"
+					id: id_linha, tabela: "estado"
 					},
-					success: function(){
-						nome = $("nome_alterar").val();
+					success: function(r){
+						console.log(r);
+						nome = $("#nome_alterar").val();
 						td.html(nome);
 						td.attr("class","nome");
 					}
@@ -196,27 +167,11 @@
 ?>	
 	
 nome:<input type="text" name="nome" /><br /><br />
-email:<input type="text" name="email" /><br /><br />
-salario:<input type="text" name="salario" /><br /><br />
-<select name='cod_cidade'>
-				<?php	
-					
-					$consulta_cidade = "SELECT * FROM cidade ORDER BY nome";
-					$resultado = mysqli_query($conexao,$consulta_cidade) or die ("ERRO");
-					
-						while($linha=mysqli_fetch_assoc($resultado_cidade)){
-							echo '<option value = "'. $linha["id_cidade"] .'">'. $linha["nome"] .'</option>';
-						}
-				?>
-</select><br></br>
-sexo:<br /><br />
-masculino<input type="radio" name="sexo" value="m">
-feminino<input type="radio" name="sexo" value="f">
-<br /><br />
+uf:<input type="text" name="uf" /><br /><br />
 
 <input type="button" class="cadastrar" value="cadastrar" />
 
-<h3>cadastros</h3>
+
 
 <form name="filtro">
 	<input type="text" name="nome_filtro" placeholder="filtrar por nome...">
@@ -227,7 +182,7 @@ feminino<input type="radio" name="sexo" value="f">
 
 	<thead>
 		<tr>
-			<th>nome</th><th>email</th><th>sexo</th><th>salario</th><th>ação</th>
+			<th>nome</th><th>UF</th><th>ação</th>
 		</tr>
 	</thead>
 	<tbody id="tb">
@@ -238,7 +193,7 @@ feminino<input type="radio" name="sexo" value="f">
 <div id="paginação">
 <?php 
 		include("conexao.php");
-		include("paginacao_cadastro.php");
+		include("paginacao_cidade.php");
 ?>
 </div>
 </body>

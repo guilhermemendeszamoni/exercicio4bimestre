@@ -5,7 +5,7 @@ include("conexao.php");
 	
 	$p = $_POST["pg"];
 	
-	$sql = "SELECT * FROM cadastro";
+	$sql = "SELECT * FROM cidade INNer JOIN estado";
 	
 	if(isset($_POST["nome_filtro"])){
 		$nome = $_POST["nome_filtro"];
